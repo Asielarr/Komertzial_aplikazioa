@@ -3,6 +3,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.PopupMenu;
 import android.widget.Toast;
@@ -12,10 +15,24 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class Sarrera extends AppCompatActivity {
     Button btnMenu;
+    WebView webViewMapa;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sarrera);
+        // Inicializar el WebView
+        webViewMapa = findViewById(R.id.mapa);
+
+        // Habilitar JavaScript en WebView
+        WebSettings webSettings = webViewMapa.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+
+        // Forzar WebView a abrirse en la app en lugar del navegador
+        webViewMapa.setWebViewClient(new WebViewClient());
+
+        // Cargar el mapa con la ubicación de Móstoles
+        String urlMapa = "https://www.google.com/maps?q=Móstoles,España&output=embed";
+        webViewMapa.loadUrl(urlMapa);
 
         btnMenu = findViewById(R.id.btnMenu);
         btnMenu.setOnClickListener(v -> {

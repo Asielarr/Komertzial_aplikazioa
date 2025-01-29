@@ -10,26 +10,46 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-public class VisitasAdapter extends RecyclerView.Adapter<VisitasAdapter.ViewHolder> {
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+import java.util.List;
 
-    public List<Visita> visitasList;
+public class VisitasAdapter extends RecyclerView.Adapter<VisitasAdapter.VisitaViewHolder> {
 
-    public VisitasAdapter(List<Visita> visitasList) {
+    private List<Visita> visitasList;
+    private OnVisitaDeletedListener deleteListener;
+
+    public interface OnVisitaDeletedListener {
+        void onVisitaDeleted(Visita visita);
+    }
+
+    public VisitasAdapter(List<Visita> visitasList, OnVisitaDeletedListener deleteListener) {
         this.visitasList = visitasList;
+        this.deleteListener = deleteListener;
     }
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public VisitaViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_visita, parent, false);
-        return new ViewHolder(view);
+        return new VisitaViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull VisitaViewHolder holder, int position) {
         Visita visita = visitasList.get(position);
-        holder.txtTitulo.setText(visita.getTitulo());
-        holder.txtDetalles.setText(visita.getDetalles());
+        holder.txtTituloVisita.setText(visita.getTitulo());
+        holder.txtDetallesVisita.setText(visita.getDetalles());
+
+        // Manejar la eliminación
+        holder.btnEliminarVisita.setOnClickListener(v -> {
+            deleteListener.onVisitaDeleted(visita);
+        });
     }
 
     @Override
@@ -37,14 +57,17 @@ public class VisitasAdapter extends RecyclerView.Adapter<VisitasAdapter.ViewHold
         return visitasList.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView txtTitulo, txtDetalles;
+    public static class VisitaViewHolder extends RecyclerView.ViewHolder {
+        TextView txtTituloVisita, txtDetallesVisita;
+        Button btnEliminarVisita;
 
-        public ViewHolder(@NonNull View itemView) {
+        public VisitaViewHolder(@NonNull View itemView) {
             super(itemView);
-            txtTitulo = itemView.findViewById(R.id.txtTitulo);
-            txtDetalles = itemView.findViewById(R.id.txtDetalles);
+            txtTituloVisita = itemView.findViewById(R.id.txtTituloVisita);
+            txtDetallesVisita = itemView.findViewById(R.id.txtDetallesVisita);
+            btnEliminarVisita = itemView.findViewById(R.id.btnEliminarVisita);
         }
     }
 }
+
 

@@ -51,13 +51,11 @@ public class AgendaActivity extends AppCompatActivity {
 
         // Configurar RecyclerView
         rvVisitas.setLayoutManager(new LinearLayoutManager(this));
-        visitasAdapter = new VisitasAdapter(visitasList);
+        visitasAdapter = new VisitasAdapter(visitasList, this::eliminarVisita);
         rvVisitas.setAdapter(visitasAdapter);
 
         // Configurar fecha inicial en el calendario
         selectedDate = getTodayDate();
-
-        // Cargar actividades guardadas para la fecha actual
         loadActivitiesForDate(selectedDate);
 
         // Listener del CalendarView
@@ -70,6 +68,15 @@ public class AgendaActivity extends AppCompatActivity {
         // Listener para agregar una nueva visita
         btnAgregarVisita.setOnClickListener(v -> showAddVisitaDialog());
     }
+
+    // Método para eliminar una visita
+    private void eliminarVisita(Visita visita) {
+        visitasList.remove(visita);
+        saveActivitiesForDate(selectedDate);
+        visitasAdapter.notifyDataSetChanged();
+    }
+
+
 
     // Método para mostrar un diálogo y agregar una nueva visita
     @SuppressLint("NotifyDataSetChanged")
