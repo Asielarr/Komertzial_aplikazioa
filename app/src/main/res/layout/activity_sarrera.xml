@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Sarrera">
+
+    <!-- Botón de Menú en la parte superior derecha -->
+    <Button
+        android:id="@+id/btnMenu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Menú"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="16dp"/>
+
+    <!-- Etiqueta y valor de "Ongi etorri" -->
+    <TextView
+        android:id="@+id/txtongietorri"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ongi etorri:"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnMenu"
+        android:layout_marginTop="32dp" />
+
+    <TextView
+        android:id="@+id/txterab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@+id/txtongietorri"
+        app:layout_constraintTop_toTopOf="@+id/txtongietorri"
+        android:layout_marginStart="16dp" />
+
+    <!-- Etiqueta y valor de "Helbidea" -->
+    <TextView
+        android:id="@+id/txthelbidea"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Helbidea:"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtongietorri"
+        android:layout_marginTop="16dp" />
+
+    <TextView
+        android:id="@+id/txthelbide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="Santa Luzia 17, Tolosa, España"
+        app:layout_constraintStart_toEndOf="@+id/txthelbidea"
+        app:layout_constraintTop_toTopOf="@+id/txthelbidea" />
+
+    <!-- Etiqueta y valor de "Telefonoa" -->
+    <TextView
+        android:id="@+id/txttelefonoa"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Telefonoa:"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txthelbidea"
+        android:layout_marginTop="16dp" />
+
+    <TextView
+        android:id="@+id/telefonoa"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:autoLink="phone"
+        android:text="+34 666333666"
+        android:textSize="18sp"
+        app:layout_constraintStart_toEndOf="@+id/txttelefonoa"
+        app:layout_constraintTop_toTopOf="@+id/txttelefonoa" />
+
+    <!-- Etiqueta y valor de "Email" -->
+    <TextView
+        android:id="@+id/TxtEmail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Email:"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txttelefonoa"
+        android:layout_marginTop="16dp" />
+
+    <TextView
+        android:id="@+id/emaila"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:autoLink="email"
+        android:text="Correoa@prmt.com"
+        android:textSize="18sp"
+        app:layout_constraintStart_toEndOf="@+id/TxtEmail"
+        app:layout_constraintTop_toTopOf="@+id/TxtEmail" />
+
+    <!-- Mapa de Google en la parte inferior -->
+    <WebView
+        android:id="@+id/mapa"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/TxtEmail"
+        app:layout_constraintVertical_bias="1.0" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

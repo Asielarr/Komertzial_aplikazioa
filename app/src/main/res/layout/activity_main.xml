@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#009688"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/txtsarreraizena"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="28dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="501dp"
+        android:text="@string/Enpresaizena"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toTopOf="@+id/buttonhasi"
+        app:layout_constraintStart_toStartOf="@+id/textViewKA"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/Logotipoa"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/logo" />
+
+    <EditText
+        android:id="@+id/editerabiltzailea"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="23dp"
+        android:ems="10"
+        android:hint="Erabiltzailea"
+        android:inputType="text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewKA" />
+
+    <EditText
+        android:id="@+id/editPasahitza"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:ems="10"
+        android:hint="Pasahitza"
+        android:inputType="textPassword"
+        app:layout_constraintStart_toStartOf="@+id/editerabiltzailea"
+        app:layout_constraintTop_toBottomOf="@+id/editerabiltzailea" />
+
+    <TextView
+        android:id="@+id/textViewKA"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="17dp"
+        android:layout_marginTop="23dp"
+        android:text="Komertzialen aplikazioa"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="@+id/editerabiltzailea"
+        app:layout_constraintTop_toBottomOf="@+id/txtsarreraizena" />
+
+    <Button
+        android:id="@+id/buttonhasi"
+        android:layout_width="153dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="111dp"
+        android:text="Saioa Hasi"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtsarreraizena" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
