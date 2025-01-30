@@ -1,8 +1,7 @@
 package com.example.komertzial_aplikazioa;
-import android.annotation.SuppressLint;
+
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,41 +9,43 @@ import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.example.komertzial_aplikazioa.Visita;
-
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 public class AgendaActivity extends AppCompatActivity {
-
     private CalendarView calendarView;
     private RecyclerView rvVisitas;
     private VisitasAdapter visitasAdapter;
     private List<Visita> visitasList;
     private Button btnAgregarVisita;
     private String selectedDate;
-    private SharedPreferences sharedPreferences;
+    private DatabaseHelper db;
+    private int usuarioId; // Para almacenar el ID del usuario que ha iniciado sesión
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_agenda);
 
-        // Inicializar SharedPreferences
-        sharedPreferences = getSharedPreferences("AgendaPrefs", Context.MODE_PRIVATE);
+        // Inicializar base de datos
+        db = new DatabaseHelper(this);
 
-        // Inicializar lista de visitas
+        // Obtener el ID de usuario desde la sesión o login (esto lo debes gestionar de alguna manera)
+        // Aquí se hace de forma temporal, asumiendo que el ID se pasa desde el Intent anterior
+        usuarioId = getIntent().getIntExtra("usuarioId", -1); // Asegúrate de pasar este dato al crear la actividad
+
+        if (usuarioId == -1) {
+            Toast.makeText(this, "ID de usuario no encontrado", Toast.LENGTH_SHORT).show();
+            finish(); // Finalizar si no se tiene un ID de usuario válido
+            return;
+        }
+
+        // Inicializar UI
         visitasList = new ArrayList<>();
-
-        // Inicializar elementos UI
         calendarView = findViewById(R.id.calendarView);
         rvVisitas = findViewById(R.id.rvVisitas);
         btnAgregarVisita = findViewById(R.id.btnAgregarVisita);
@@ -54,65 +55,60 @@ public class AgendaActivity extends AppCompatActivity {
         visitasAdapter = new VisitasAdapter(visitasList, this::eliminarVisita);
         rvVisitas.setAdapter(visitasAdapter);
 
-        // Configurar fecha inicial en el calendario
+        // Configurar fecha inicial
         selectedDate = getTodayDate();
-        loadActivitiesForDate(selectedDate);
+        cargarVisitas(selectedDate);
 
-        // Listener del CalendarView
+        // Listener para seleccionar fecha
         calendarView.setOnDateChangeListener((view, year, month, dayOfMonth) -> {
             selectedDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, dayOfMonth);
-            Toast.makeText(AgendaActivity.this, "Fecha seleccionada: " + selectedDate, Toast.LENGTH_SHORT).show();
-            loadActivitiesForDate(selectedDate);
+            cargarVisitas(selectedDate);
         });
 
-        // Listener para agregar una nueva visita
-        btnAgregarVisita.setOnClickListener(v -> showAddVisitaDialog());
+        // Botón para agregar nueva visita
+        btnAgregarVisita.setOnClickListener(v -> mostrarDialogoAgregarVisita());
     }
 
-    // Método para eliminar una visita
+    // Método para eliminar visita
     private void eliminarVisita(Visita visita) {
-        visitasList.remove(visita);
-        saveActivitiesForDate(selectedDate);
-        visitasAdapter.notifyDataSetChanged();
+        db.eliminarVisita(visita.getId());
+        cargarVisitas(selectedDate);
     }
 
-
-
-    // Método para mostrar un diálogo y agregar una nueva visita
-    @SuppressLint("NotifyDataSetChanged")
-    private void showAddVisitaDialog() {
+    // Mostrar diálogo para agregar visita
+    private void mostrarDialogoAgregarVisita() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Nueva Actividad");
 
-        // Inflar layout personalizado
         View viewInflated = LayoutInflater.from(this).inflate(R.layout.dialog_add_visita, null);
-        EditText inputTitulo;
-        inputTitulo= viewInflated.findViewById(R.id.inputTitulo);
+        EditText inputTitulo = viewInflated.findViewById(R.id.inputTitulo);
         EditText inputDetalles = viewInflated.findViewById(R.id.inputDetalles);
         builder.setView(viewInflated);
 
-        // Botón de confirmación
         builder.setPositiveButton("Guardar", (dialog, which) -> {
             String titulo = inputTitulo.getText().toString().trim();
             String detalles = inputDetalles.getText().toString().trim();
 
             if (!titulo.isEmpty() && !detalles.isEmpty()) {
-                Visita nuevaVisita = new Visita(titulo, detalles);
-                visitasList.add(nuevaVisita);
-                saveActivitiesForDate(selectedDate);  // Guardar en SharedPreferences
-                visitasAdapter.notifyDataSetChanged();
+                db.insertarVisita(titulo, detalles, selectedDate, usuarioId); // Usamos el ID de usuario dinámicamente
+                cargarVisitas(selectedDate);
             } else {
-                Toast.makeText(AgendaActivity.this, "Debes llenar ambos campos", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Debes llenar ambos campos", Toast.LENGTH_SHORT).show();
             }
         });
 
-        // Botón de cancelar
         builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.cancel());
-
         builder.show();
     }
 
-    // Método para obtener la fecha actual
+    // Cargar visitas desde SQLite
+    private void cargarVisitas(String fecha) {
+        visitasList.clear();
+        visitasList.addAll(db.obtenerEventosPorUsuarioYFecha(usuarioId,fecha)); // Cargamos las visitas para un usuario específico y fecha
+        visitasAdapter.notifyDataSetChanged();
+    }
+
+    // Obtener la fecha actual
     private String getTodayDate() {
         java.util.Calendar calendar = java.util.Calendar.getInstance();
         return String.format(Locale.getDefault(), "%04d-%02d-%02d",
@@ -121,38 +117,4 @@ public class AgendaActivity extends AppCompatActivity {
                 calendar.get(java.util.Calendar.DAY_OF_MONTH));
     }
 
-    // Cargar actividades guardadas para una fecha específica
-    @SuppressLint("NotifyDataSetChanged")
-    private void loadActivitiesForDate(String selectedDate) {
-        visitasList.clear();
-        visitasList.addAll(getActivitiesForDate(selectedDate));
-        visitasAdapter.notifyDataSetChanged();
-    }
-
-    // Obtener actividades guardadas de SharedPreferences
-    private List<Visita> getActivitiesForDate(String selectedDate) {
-        List<Visita> visitasForDate = new ArrayList<>();
-        Set<String> visitasSet = sharedPreferences.getStringSet(selectedDate, new HashSet<>());
-
-        for (String visitaStr : visitasSet) {
-            String[] parts = visitaStr.split("\\|");
-            if (parts.length == 2) {
-                visitasForDate.add(new Visita(parts[0], parts[1]));
-            }
-        }
-
-        return visitasForDate;
-    }
-
-    // Guardar actividades en SharedPreferences
-    private void saveActivitiesForDate(String selectedDate) {
-        Set<String> visitasSet = new HashSet<>();
-        for (Visita visita : visitasList) {
-            visitasSet.add(visita.getTitulo() + "|" + visita.getDetalles());
-        }
-
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putStringSet(selectedDate, visitasSet);
-        editor.apply();
-    }
 }
