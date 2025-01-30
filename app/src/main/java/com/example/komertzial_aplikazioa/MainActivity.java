@@ -33,13 +33,7 @@ public class MainActivity extends AppCompatActivity {
         // Comprobar que las tablas y columnas están actualizadas
         dbHelper.getWritableDatabase(); // Esto llamará a onUpgrade si es necesario
 
-        // Inicializar SharedPreferences
-        sharedPreferences = getSharedPreferences("LoginPrefs", Context.MODE_PRIVATE);
 
-        // Verificar si ya hay una sesión iniciada
-        if (sharedPreferences.getBoolean("isLoggedIn", false)) {
-            redirigirASarrera();
-        }
 
         // Evento de botón para iniciar sesión
         buttonhasi.setOnClickListener(new View.OnClickListener() {
@@ -52,14 +46,9 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "Eremu guztiak bete behar dira", Toast.LENGTH_SHORT).show();
                 } else {
                     if (verificarCredenciales(erabiltzailea, pasahitza)) {
-                        // Guardar sesión
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putBoolean("isLoggedIn", true);
-                        editor.putString("erabiltzailea", erabiltzailea);
-                        editor.apply();
 
                         Toast.makeText(MainActivity.this, "Ongi etorri, " + erabiltzailea, Toast.LENGTH_SHORT).show();
-                        redirigirASarrera();
+                        redirigirASarrera(erabiltzailea);
                     } else {
                         Toast.makeText(MainActivity.this, "Erabiltzailea edo pasahitza okerra", Toast.LENGTH_SHORT).show();
                     }
@@ -78,18 +67,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Método para redirigir a la actividad SarreraActivity
-    private void redirigirASarrera() {
+    private void redirigirASarrera(String nombreUsuario) {
+        // Crear un Intent para ir a la actividad Sarrera
         Intent intent = new Intent(MainActivity.this, Sarrera.class);
+
+        // Pasar el nombre de usuario al Intent
+        intent.putExtra("nombreUsuario", nombreUsuario);
+
+        // Iniciar la actividad
         startActivity(intent);
         finish(); // Cierra esta actividad
     }
-    protected void onPause() {
-        super.onPause();
 
-        // Eliminar el estado de sesión cuando la actividad se pause (esto se ejecutará cuando el usuario cierre la app)
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean("isLoggedIn", false);  // Cambiamos el estado a no logueado
-        editor.putString("erabiltzailea", "");   // Limpiamos el nombre de usuario
-        editor.apply();
-    }
 }

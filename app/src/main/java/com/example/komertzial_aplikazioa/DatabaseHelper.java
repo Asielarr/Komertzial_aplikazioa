@@ -187,6 +187,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.delete(TABLE_AGENDA, COLUMN_ID_AGENDA + " = ?", new String[]{String.valueOf(visitaId)});
 
     }
+    @SuppressLint("Range")
+    public int obtenerUserIdPorNombre(String nombreUsuario) {
+        SQLiteDatabase db = this.getReadableDatabase();
 
+        Cursor cursor = db.rawQuery("SELECT " + DatabaseHelper.COLUMN_ID + " FROM " + DatabaseHelper.TABLE_ERABILTZAILEA +
+                " WHERE " + DatabaseHelper.COLUMN_NOMBRE + " = ?", new String[]{nombreUsuario});
+
+        int userId = -1;  // Valor por defecto si no encontramos el usuario
+        if (cursor != null && cursor.moveToFirst()) {
+            userId = cursor.getInt(cursor.getColumnIndex(DatabaseHelper.COLUMN_ID));  // Recuperamos el ID
+            cursor.close();
+        }
+
+        return userId;
+    }
 
 }

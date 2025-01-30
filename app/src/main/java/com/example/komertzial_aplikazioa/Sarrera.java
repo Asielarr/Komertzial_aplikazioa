@@ -1,4 +1,5 @@
 package com.example.komertzial_aplikazioa;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -22,21 +23,27 @@ public class Sarrera extends AppCompatActivity {
     Button btnMenu;
     WebView webView ;
     TextView txterab;
+    private DatabaseHelper db;
     private SharedPreferences sharedPreferences;
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sarrera);
         // Inicializamos el TextView
         txterab = findViewById(R.id.txterab);
+        db = new DatabaseHelper(this);
+        Intent intent = getIntent();
+        // Recuperar el nombre de usuario del Intent
+        String nombreUsuario = intent.getStringExtra("nombreUsuario");
 
-        // Inicializamos el SharedPreferences
-        sharedPreferences = getSharedPreferences("LoginPrefs", Context.MODE_PRIVATE);
-
-        // Obtener el nombre de usuario desde SharedPreferences
-        String nombreUsuario = sharedPreferences.getString("erabiltzailea", "Usuario no encontrado");
-
+        // Verificar si el nombre de usuario existe y mostrarlo en el TextView
+        if (nombreUsuario != null && !nombreUsuario.isEmpty()) {
+            txterab.setText(nombreUsuario);
+        } else {
+            txterab.setText("Erabiltzailea ez da aurkitu");
+        }
 
         btnMenu = findViewById(R.id.btnMenu);
         webView = findViewById(R.id.mapa);
@@ -63,9 +70,17 @@ public class Sarrera extends AppCompatActivity {
                 switch (item.getTitle().toString()) {
                     case "Agenda":
 
+                        // Realizamos la consulta para obtener el ID del usuario desde la base de datos
+                        int userId = db.obtenerUserIdPorNombre(nombreUsuario);
 
-                        Intent agendaIntent = new Intent(Sarrera.this, AgendaActivity.class);
-                        startActivity(agendaIntent);
+                        // Si obtenemos el ID correctamente, pasamos al Intent con el ID del usuario
+                        if (userId != -1) {
+                            Intent agendaIntent = new Intent(Sarrera.this, AgendaActivity.class);
+                            agendaIntent.putExtra("user_id", userId);  // Pasamos el ID del usuario
+                            startActivity(agendaIntent);
+                        } else {
+                            Toast.makeText(Sarrera.this, "No se pudo obtener el ID del usuario", Toast.LENGTH_SHORT).show();
+                        }
                         break;
 
 

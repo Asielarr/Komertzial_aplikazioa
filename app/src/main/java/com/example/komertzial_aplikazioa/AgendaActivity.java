@@ -1,6 +1,7 @@
 package com.example.komertzial_aplikazioa;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -33,10 +34,9 @@ public class AgendaActivity extends AppCompatActivity {
 
         // Inicializar base de datos
         db = new DatabaseHelper(this);
+        Intent intent = getIntent();
 
-        // Obtener el ID de usuario desde la sesión o login (esto lo debes gestionar de alguna manera)
-        // Aquí se hace de forma temporal, asumiendo que el ID se pasa desde el Intent anterior
-        usuarioId = getIntent().getIntExtra("usuarioId", -1); // Asegúrate de pasar este dato al crear la actividad
+        usuarioId = intent.getIntExtra("user_id", usuarioId);
 
         if (usuarioId == -1) {
             Toast.makeText(this, "ID de usuario no encontrado", Toast.LENGTH_SHORT).show();
