@@ -46,7 +46,6 @@ public class VisitasAdapter extends RecyclerView.Adapter<VisitasAdapter.VisitaVi
         holder.txtTituloVisita.setText(visita.getTitulo());
         holder.txtDetallesVisita.setText(visita.getDetalles());
 
-        // Manejar la eliminación
         holder.btnEliminarVisita.setOnClickListener(v -> {
             deleteListener.onVisitaDeleted(visita);
         });

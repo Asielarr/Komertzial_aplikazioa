@@ -1,8 +1,6 @@
 package com.example.komertzial_aplikazioa;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
@@ -15,27 +13,22 @@ public class MainActivity extends AppCompatActivity {
     private EditText editerabiltzailea, editPasahitza;
     private Button buttonhasi;
     private DatabaseHelper dbHelper;
-    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Inicializar elementos de UI
         editerabiltzailea = findViewById(R.id.editerabiltzailea);
         editPasahitza = findViewById(R.id.editPasahitza);
         buttonhasi = findViewById(R.id.buttonhasi);
 
-        // Inicializar Base de Datos
         dbHelper = new DatabaseHelper(this);
 
-        // Comprobar que las tablas y columnas están actualizadas
-        dbHelper.getWritableDatabase(); // Esto llamará a onUpgrade si es necesario
+        // Eguneratuta daudela egiaztatu
+        dbHelper.getWritableDatabase();
 
 
-
-        // Evento de botón para iniciar sesión
         buttonhasi.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -45,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
                 if (erabiltzailea.isEmpty() || pasahitza.isEmpty()) {
                     Toast.makeText(MainActivity.this, "Eremu guztiak bete behar dira", Toast.LENGTH_SHORT).show();
                 } else {
-                    if (verificarCredenciales(erabiltzailea, pasahitza)) {
+                    if (kredentzialakegiaztatu(erabiltzailea, pasahitza)) {
 
                         Toast.makeText(MainActivity.this, "Ongi etorri, " + erabiltzailea, Toast.LENGTH_SHORT).show();
                         redirigirASarrera(erabiltzailea);
@@ -57,8 +50,8 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // Método para verificar credenciales en la base de datos
-    private boolean verificarCredenciales(String erabiltzailea, String pasahitza) {
+    // Erabiltzaile eta pasahitza egokiak sartu direla egiaztatzen du
+    private boolean kredentzialakegiaztatu(String erabiltzailea, String pasahitza) {
         Cursor cursor = dbHelper.obtenerUsuarioPorNombreYPass(erabiltzailea, pasahitza);
 
         boolean resultado = cursor.getCount() > 0;
@@ -66,17 +59,14 @@ public class MainActivity extends AppCompatActivity {
         return resultado;
     }
 
-    // Método para redirigir a la actividad SarreraActivity
+    // Hurrengo orrialdera bidaltzen du erabiltzailea eramanez
     private void redirigirASarrera(String nombreUsuario) {
-        // Crear un Intent para ir a la actividad Sarrera
         Intent intent = new Intent(MainActivity.this, Sarrera.class);
 
-        // Pasar el nombre de usuario al Intent
         intent.putExtra("nombreUsuario", nombreUsuario);
 
-        // Iniciar la actividad
         startActivity(intent);
-        finish(); // Cierra esta actividad
+        finish();
     }
 
 }

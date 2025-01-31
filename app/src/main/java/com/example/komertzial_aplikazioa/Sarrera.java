@@ -24,21 +24,18 @@ public class Sarrera extends AppCompatActivity {
     WebView webView ;
     TextView txterab;
     private DatabaseHelper db;
-    private SharedPreferences sharedPreferences;
 
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sarrera);
-        // Inicializamos el TextView
         txterab = findViewById(R.id.txterab);
         db = new DatabaseHelper(this);
         Intent intent = getIntent();
-        // Recuperar el nombre de usuario del Intent
+        // Erabiltzaile izena hartu
         String nombreUsuario = intent.getStringExtra("nombreUsuario");
 
-        // Verificar si el nombre de usuario existe y mostrarlo en el TextView
         if (nombreUsuario != null && !nombreUsuario.isEmpty()) {
             txterab.setText(nombreUsuario);
         } else {
@@ -60,26 +57,25 @@ public class Sarrera extends AppCompatActivity {
             popup.getMenu().add("Agenda");
             popup.getMenu().add("Partner kudeaketa");
             popup.getMenu().add("Eskaerak");
+            popup.getMenu().add("Komertzialak eguneratu");
+
 
 
             popup.setOnMenuItemClickListener(item -> {
                 Toast.makeText(Sarrera.this, "Seleccionaste: " + item.getTitle(), Toast.LENGTH_SHORT).show();
 
-
-                // Lógica para cargar la actividad correspondiente
                 switch (item.getTitle().toString()) {
                     case "Agenda":
 
-                        // Realizamos la consulta para obtener el ID del usuario desde la base de datos
                         int userId = db.obtenerUserIdPorNombre(nombreUsuario);
 
-                        // Si obtenemos el ID correctamente, pasamos al Intent con el ID del usuario
                         if (userId != -1) {
                             Intent agendaIntent = new Intent(Sarrera.this, AgendaActivity.class);
-                            agendaIntent.putExtra("user_id", userId);  // Pasamos el ID del usuario
+                            agendaIntent.putExtra("user_id", userId);
+                            agendaIntent.putExtra("user_name", nombreUsuario);
                             startActivity(agendaIntent);
                         } else {
-                            Toast.makeText(Sarrera.this, "No se pudo obtener el ID del usuario", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(Sarrera.this, "Ezin izan da ID-a lortu", Toast.LENGTH_SHORT).show();
                         }
                         break;
 
@@ -98,6 +94,10 @@ public class Sarrera extends AppCompatActivity {
                         //Intent eskaerakIntent = new Intent(Sarrera.this, EskaerakActivity.class);
                         //startActivity(eskaerakIntent);
                         break;
+
+                    case "Komertzialak eguneratu":
+                        Intent eguneraketaintent = new Intent(Sarrera.this, xml_inportatu.class);
+                        startActivity(eguneraketaintent);
                 }
 
 

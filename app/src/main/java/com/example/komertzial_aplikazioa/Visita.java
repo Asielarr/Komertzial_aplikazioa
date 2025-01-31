@@ -1,12 +1,11 @@
 package com.example.komertzial_aplikazioa;
 
 public class Visita {
-    private int id;  // ID único en la BD
+    private int id;
     private String title;
     private String details;
-    private int erabiltzaileaId; // ID del usuario relacionado
+    private int erabiltzaileaId;
 
-    // Constructor con ID (para cuando obtenemos de la BD)
     public Visita(int id, String title, String details, int erabiltzaileaId) {
         this.id = id;
         this.title = title;
@@ -14,7 +13,6 @@ public class Visita {
         this.erabiltzaileaId = erabiltzaileaId;
     }
 
-    // Constructor sin ID (para cuando creamos una nueva visita)
     public Visita(String title, String details, int erabiltzaileaId) {
         this.title = title;
         this.details = details;
@@ -38,7 +36,7 @@ public class Visita {
         return erabiltzaileaId;
     }
 
-    // Setters (si los necesitas)
+    // Setters
     public void setId(int id) {
         this.id = id;
     }
