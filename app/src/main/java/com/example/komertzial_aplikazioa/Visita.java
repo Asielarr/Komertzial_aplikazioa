@@ -5,6 +5,7 @@ public class Visita {
     private String title;
     private String details;
     private int erabiltzaileaId;
+    private String date;
 
     public Visita(int id, String title, String details, int erabiltzaileaId) {
         this.id = id;
@@ -17,6 +18,11 @@ public class Visita {
         this.title = title;
         this.details = details;
         this.erabiltzaileaId = erabiltzaileaId;
+    }
+
+    public Visita(String date, String title) {
+        this.date = date;
+        this.title =title;
     }
 
     // Getters
@@ -34,6 +40,10 @@ public class Visita {
 
     public int getErabiltzaileaId() {
         return erabiltzaileaId;
+    }
+
+    public String getDate() {
+        return date;
     }
 
     // Setters

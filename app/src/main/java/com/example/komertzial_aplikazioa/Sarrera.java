@@ -81,10 +81,8 @@ public class Sarrera extends AppCompatActivity {
 
 
                     case "Partner kudeaketa":
-
-
-                        //Intent partnerIntent = new Intent(Sarrera.this, PartnerActivity.class);
-                        //startActivity(partnerIntent);
+                        Intent partnerIntent = new Intent(Sarrera.this, PartnerActivity.class);
+                        startActivity(partnerIntent);
                         break;
 
 

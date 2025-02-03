@@ -1,9 +1,13 @@
 package com.example.komertzial_aplikazioa;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,7 +37,7 @@ public class AgendaActivity extends AppCompatActivity {
     private List<Visita> visitasList;
     private Button btnAgregarVisita;
     private String selectedDate;
-    private DatabaseHelper db;
+    private static DatabaseHelper db;
     private int usuarioId;
     private Button btnesportatu;
     private String erabizena;
@@ -78,11 +82,7 @@ public class AgendaActivity extends AppCompatActivity {
 
 
         btnesportatu.setOnClickListener(view -> {
-            try {
-                txtesportatu();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            txtesportatu(this);
         });
     }
 
@@ -134,67 +134,45 @@ public class AgendaActivity extends AppCompatActivity {
                 calendar.get(java.util.Calendar.DAY_OF_MONTH));
     }
 
-    private void txtesportatu() throws IOException {
-        // Verificar si el nombre de usuario es válido
-        if (erabizena == null || erabizena.isEmpty()) {
-            Toast.makeText(this, "Error: Usuario no encontrado.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Verificar si el usuarioID es válido
-        if (usuarioId == -1) {
-            Toast.makeText(this, "No se encontró el usuario en la base de datos.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Suponiendo que tienes un CalendarView en tu layout
-        CalendarView calendarView = findViewById(R.id.calendarView);  // Asegúrate de que el ID del calendario sea correcto
-        long fechaSeleccionada = calendarView.getDate();  // Obtener la fecha seleccionada
-
+    public void txtesportatu(Context context) {
+        DatabaseHelper db = new DatabaseHelper(context); // CORREGIDO: Pasar context
         Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(fechaSeleccionada);  // Establecer la fecha seleccionada
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM", Locale.getDefault());
+        String currentMonth = dateFormat.format(calendar.getTime());
 
-        int mesSeleccionadoNumero = calendar.get(Calendar.MONTH) + 1;  // El mes en Calendar empieza desde 0, por eso sumamos 1
-
-        // Convertir el número del mes a formato de dos dígitos
-        String mesSeleccionado = String.format("%02d", mesSeleccionadoNumero);
-
-
-        // Obtener las reuniones del usuario para el mes seleccionado
-        List<String> reuniones = db.obtenerReunionesPorUsuarioYMes(usuarioId, mesSeleccionado);
-
-        if (reuniones.isEmpty()) {
-            Toast.makeText(this, "No hay reuniones para exportar.", Toast.LENGTH_SHORT).show();
+        List<Visita> meetings = db.getMeetingsForMonth(currentMonth);
+        if (meetings.isEmpty()) {
+            new Handler(Looper.getMainLooper()).post(() ->
+                    Toast.makeText(context, "No hay reuniones para este mes", Toast.LENGTH_SHORT).show()
+            );
+            Log.e("ExportMeetings", "No hay reuniones para exportar.");
             return;
         }
 
-        // Crear el archivo TXT
-        String nombreArchivo = erabizena + "_" + mesSeleccionado + ".txt";
-        File directorio = getExternalFilesDir(null);  // Directorio externo, si no existe, usa interno
-        if (directorio == null) {
-            directorio = getFilesDir();  // Usar almacenamiento interno si el externo no está disponible
+        File directory = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+        if (directory != null && !directory.exists()) {
+            boolean dirCreated = directory.mkdirs();
+            Log.d("ExportMeetings", "Fitxategia sortu da: " + dirCreated);
         }
 
-        // Crear directorio si no existe
-        if (!directorio.exists()) {
-            directorio.mkdirs();
-        }
+        File file = new File(directory, "Bilerak_" + currentMonth + ".txt");
 
-        File archivoTXT = new File(directorio, nombreArchivo);
-
-        // Escribir las reuniones en el archivo TXT
-        try (FileWriter writer = new FileWriter(archivoTXT)) {
-            for (String reunion : reuniones) {
-                writer.write(reunion + "\n");
+        try (FileWriter writer = new FileWriter(file)) {
+            for (Visita meeting : meetings) {
+                writer.write("Data: " + meeting.getDate() + " - Goiburua: " + meeting.getTitulo() + "\n");
             }
             writer.flush();
+            Log.d("ExportMeetings", "Archivo guardado en: " + file.getAbsolutePath());
 
-            // Mostrar un mensaje de éxito
-            Toast.makeText(this, "Archivo guardado en: " + archivoTXT.getAbsolutePath(), Toast.LENGTH_LONG).show();
+            new Handler(Looper.getMainLooper()).post(() ->
+                    Toast.makeText(context, "Archivo guardado en: " + file.getAbsolutePath(), Toast.LENGTH_LONG).show()
+            );
+
         } catch (IOException e) {
-            // Si ocurre un error al guardar el archivo, mostrar el error
-            Toast.makeText(this, "Error al guardar el archivo: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            Log.e("Error", "Error al guardar el archivo", e);
+            Log.e("ExportMeetings", "Error al guardar el archivo", e);
+            new Handler(Looper.getMainLooper()).post(() ->
+                    Toast.makeText(context, "Error al guardar el archivo", Toast.LENGTH_SHORT).show()
+            );
         }
     }
 

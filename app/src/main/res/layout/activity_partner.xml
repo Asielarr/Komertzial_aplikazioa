@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".PartnerActivity">
+
+    <!-- RecyclerView que ocupa un área central para mostrar los partners -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recypartner"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="96dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/BtnAlta"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:scrollbars="vertical"/>
+
+    <!-- Botón para agregar un nuevo partner -->
+    <Button
+        android:id="@+id/BtnAlta"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Partner alta eman"
+        app:layout_constraintBottom_toTopOf="@id/BtnBaja"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/recypartner" />
+
+    <!-- Botón para eliminar un partner -->
+    <Button
+        android:id="@+id/BtnBaja"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Partner baja eman"
+        app:layout_constraintBottom_toTopOf="@id/BtnInportatu"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/BtnAlta" />
+
+    <!-- Botón para importar datos -->
+    <Button
+        android:id="@+id/BtnInportatu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Datuak inportatu"
+        app:layout_constraintTop_toBottomOf="@id/BtnBaja"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/BtnAldaketa"
+        android:layout_marginTop="16dp"/>
+
+    <!-- Botón para editar los datos de un partner -->
+    <Button
+        android:id="@+id/BtnAldaketa"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Partner datuak aldatu"
+        app:layout_constraintTop_toBottomOf="@id/BtnInportatu"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="16dp"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

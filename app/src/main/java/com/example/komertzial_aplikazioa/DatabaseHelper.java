@@ -1,5 +1,6 @@
 package com.example.komertzial_aplikazioa;
 
+
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
@@ -17,7 +18,7 @@ import java.util.Locale;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "komertzial_aplikazioa"; // Nuevo nombre de la base de datos
-    private static final int DATABASE_VERSION = 4; // Incrementado para reflejar cambios en la estructura
+    private static final int DATABASE_VERSION = 5; // Incrementado para reflejar cambios en la estructura
 
     // Tablas
     public static final String TABLE_KOMERTZIALAK = "komertzialak"; // Nuevo nombre de la tabla
@@ -37,6 +38,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_DETALLES = "detalles";
     public static final String COLUMN_FECHA = "fecha";
     public static final String COLUMN_KOMERTZIAL_ID = "komertzial_id"; // Nuevo nombre de la columna de clave foránea
+
+    public static final String TABLE_PARTNER = "partnerra";
+    public static final String COLUMN_PARTNER_ID = "Partner_id";
+    public static final String COLUMN_NOMBRE_PART = "Nombre";
+    public static final String COLUMN_DIRECCION = "Direccion";
+    public static final String COLUMN_TELEFONO_PART = "Telefono";
+    public static final String COLUMN_ESTADO = "Estado";
+    public static final String COLUMN_ID_COMERCIAL = "Id_Comercial";
 
     // Sentencias SQL para crear las tablas
     private static final String CREATE_TABLE_KOMERTZIALAK =
@@ -58,6 +67,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     "FOREIGN KEY (" + COLUMN_KOMERTZIAL_ID + ") REFERENCES " +
                     TABLE_KOMERTZIALAK + "(" + COLUMN_ID + "))";
 
+    String CREATE_TABLE_PARTNER = "CREATE TABLE " + TABLE_PARTNER + " (" +
+            COLUMN_PARTNER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            COLUMN_NOMBRE_PART + " TEXT NOT NULL, " +
+            COLUMN_DIRECCION + " TEXT NOT NULL, " +
+            COLUMN_TELEFONO_PART + " TEXT NOT NULL, " +
+            COLUMN_ESTADO + " INTEGER NOT NULL, " + // 0 = No es partner, 1 = Es partner
+            COLUMN_ID_COMERCIAL + " INTEGER, " +
+            "FOREIGN KEY (" + COLUMN_ID_COMERCIAL + ") REFERENCES komertzialak(id));";
+
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -66,6 +84,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_TABLE_KOMERTZIALAK);
         db.execSQL(CREATE_TABLE_AGENDA);
+        db.execSQL(CREATE_TABLE_PARTNER);
 
         // Insertar el usuario admin si la tabla está vacía
         Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_KOMERTZIALAK, null);
@@ -74,21 +93,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
 
         if (count == 0) {
-            ContentValues values = new ContentValues();
-            values.put(COLUMN_NOMBRE, "admin");
-            values.put(COLUMN_EMAIL, "admin@admin.com");
-            values.put(COLUMN_TELEFONO, "000000000");
-            values.put(COLUMN_PASAHITZA, "admin");
-            values.put(COLUMN_EREMUA, "administracion"); // Valor por defecto
+            // Insertar un comercial (usuario admin)
+            ContentValues comercialValues = new ContentValues();
+            comercialValues.put(COLUMN_NOMBRE, "admin");
+            comercialValues.put(COLUMN_EMAIL, "admin@admin.com");
+            comercialValues.put(COLUMN_TELEFONO, "000000000");
+            comercialValues.put(COLUMN_PASAHITZA, "admin");
+            comercialValues.put(COLUMN_EREMUA, "administracion"); // Valor por defecto
 
-            db.insert(TABLE_KOMERTZIALAK, null, values);
+            long comercialId = db.insert(TABLE_KOMERTZIALAK, null, comercialValues); // Guardar el id del comercial insertado
+
+            // Insertar un partner relacionado con el comercial recién insertado
+            ContentValues partnerValues = new ContentValues();
+            partnerValues.put(COLUMN_NOMBRE, "Partner de prueba");
+            partnerValues.put(COLUMN_DIRECCION, "Calle Ficticia 123");
+            partnerValues.put(COLUMN_TELEFONO, "123456789");
+            partnerValues.put(COLUMN_ESTADO, 1); // 1 = Es partner
+            partnerValues.put(COLUMN_ID_COMERCIAL, comercialId); // Asociamos el partner con el comercial
+
+            db.insert(TABLE_PARTNER, null, partnerValues); // Insertamos el nuevo partner
         }
     }
 
     @SuppressLint("Range")
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion < 4) { // Verifica si la base de datos debe actualizarse a la nueva versión
+        if (oldVersion < 5) { // Verifica si la base de datos debe actualizarse a la nueva versión
             try {
                 // Agregar la nueva columna 'eremua' si no existe
                 Cursor cursor = db.rawQuery("PRAGMA table_info(" + TABLE_KOMERTZIALAK + ")", null);
@@ -196,66 +226,49 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return db.update(TABLE_KOMERTZIALAK, values, COLUMN_ID + " = ?", new String[]{String.valueOf(id)});
     }
+    public List<Visita> getMeetingsForMonth(String month) {
+        List<Visita> meetings = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
 
-    public List<String> obtenerReunionesPorUsuarioYMes(int userId, String mes) {
-        List<String> reuniones = new ArrayList<>();
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        // Asegúrate de que el mes está en formato 2 dígitos, por ejemplo: "01" para enero
-        String mesFormatoDosDigitos = String.format("%02d", Integer.parseInt(mes));
-
-        // Log para depuración
-        Log.d("ReunionesManager", "Mes solicitado: " + mes + " convertido a: " + mesFormatoDosDigitos);
-
-        // Consulta SQL para obtener las reuniones
-        String query = "SELECT titulo, detalles, fecha FROM " + DatabaseHelper.TABLE_AGENDA +
-                " WHERE erabiltzailea_id = ? AND strftime('%m', fecha) = ?";
-
-        // Log de la consulta que se va a ejecutar
-        Log.d("ReunionesManager", "Consulta SQL: " + query + " con parámetros: " + userId + ", " + mesFormatoDosDigitos);
-
-        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId), mesFormatoDosDigitos});
+        Cursor cursor = db.rawQuery("SELECT fecha, titulo FROM agenda WHERE fecha LIKE ?", new String[]{month + "%"}); // CORREGIDO: "fecha" en lugar de "date"
 
         if (cursor.moveToFirst()) {
             do {
-                @SuppressLint("Range") String titulo = cursor.getString(cursor.getColumnIndex("titulo"));
-                @SuppressLint("Range") String detalles = cursor.getString(cursor.getColumnIndex("detalles"));
-                @SuppressLint("Range") String fecha = cursor.getString(cursor.getColumnIndex("fecha"));
-
-                // Log para verificar que se encontró una reunión
-                Log.d("ReunionesManager", "Reunión encontrada: " + fecha + " | " + titulo + " - " + detalles);
-
-                reuniones.add(fecha + " | " + titulo + " - " + detalles);
+                String date = cursor.getString(0);
+                String title = cursor.getString(1);
+                meetings.add(new Visita(date, title));
             } while (cursor.moveToNext());
-        } else {
-            // Log si no se encuentran reuniones para el usuario y mes especificados
-            Log.d("ReunionesManager", "No se encontraron reuniones para el usuario con ID: " + userId + " en el mes: " + mes);
         }
-
         cursor.close();
-        return reuniones;
+        db.close();
+        return meetings;
     }
 
+    public List<Partner> getAllPartners() {
+        List<Partner> partnerList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
 
-    // Método auxiliar para convertir el nombre del mes a su número correspondiente (01-12)
-    private int convertirMesANumero(String mes) {
-        switch (mes.toLowerCase(Locale.getDefault())) {
-            case "enero": return 1;
-            case "febrero": return 2;
-            case "marzo": return 3;
-            case "abril": return 4;
-            case "mayo": return 5;
-            case "junio": return 6;
-            case "julio": return 7;
-            case "agosto": return 8;
-            case "septiembre": return 9;
-            case "octubre": return 10;
-            case "noviembre": return 11;
-            case "diciembre": return 12;
-            default: return -1; // Si el mes no es válido
+        // Consulta para obtener todos los partners
+        Cursor cursor = db.query(TABLE_PARTNER, null, null, null, null, null, null);
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                do {
+                    @SuppressLint("Range") int partnerId = cursor.getInt(cursor.getColumnIndex(COLUMN_PARTNER_ID));
+                    @SuppressLint("Range") String nombre = cursor.getString(cursor.getColumnIndex(COLUMN_NOMBRE_PART));
+                    @SuppressLint("Range") String direccion = cursor.getString(cursor.getColumnIndex(COLUMN_DIRECCION));
+                    @SuppressLint("Range") String telefono = cursor.getString(cursor.getColumnIndex(COLUMN_TELEFONO_PART));
+                    @SuppressLint("Range") int estado = cursor.getInt(cursor.getColumnIndex(COLUMN_ESTADO));
+                    @SuppressLint("Range") int idComercial = cursor.getInt(cursor.getColumnIndex(COLUMN_ID_COMERCIAL));
+
+                    Partner partner = new Partner(partnerId, nombre, direccion, telefono, estado, idComercial);
+                    partnerList.add(partner);
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
         }
+
+        db.close();
+        return partnerList;
     }
-
-
-
 }
