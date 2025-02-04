@@ -2,6 +2,7 @@ package com.example.komertzial_aplikazioa;
 
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -9,6 +10,7 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -248,8 +250,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         List<Partner> partnerList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
-        // Consulta para obtener todos los partners
-        Cursor cursor = db.query(TABLE_PARTNER, null, null, null, null, null, null);
+        // Consulta con JOIN para obtener el nombre del comercial en lugar de su ID
+        String query = "SELECT p.Partner_id, p.Nombre, p.Direccion, p.Telefono, p.Estado, k.Nombre AS NombreComercial " +
+                "FROM " + TABLE_PARTNER + " p " +
+                "LEFT JOIN " + TABLE_KOMERTZIALAK + " k " +
+                "ON p.Id_Comercial = k.id";
+
+        Cursor cursor = db.rawQuery(query, null);
 
         if (cursor != null) {
             if (cursor.moveToFirst()) {
@@ -259,9 +266,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     @SuppressLint("Range") String direccion = cursor.getString(cursor.getColumnIndex(COLUMN_DIRECCION));
                     @SuppressLint("Range") String telefono = cursor.getString(cursor.getColumnIndex(COLUMN_TELEFONO_PART));
                     @SuppressLint("Range") int estado = cursor.getInt(cursor.getColumnIndex(COLUMN_ESTADO));
-                    @SuppressLint("Range") int idComercial = cursor.getInt(cursor.getColumnIndex(COLUMN_ID_COMERCIAL));
+                    @SuppressLint("Range") String nombreComercial = cursor.getString(cursor.getColumnIndex("NombreComercial")); // Obtener nombre del comercial
 
-                    Partner partner = new Partner(partnerId, nombre, direccion, telefono, estado, idComercial);
+                    // Modificar el constructor de Partner para aceptar el nombre del comercial en lugar del ID
+                    Partner partner = new Partner(partnerId, nombre, direccion, telefono, estado, nombreComercial);
                     partnerList.add(partner);
                 } while (cursor.moveToNext());
             }
@@ -271,4 +279,101 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return partnerList;
     }
+    public void addPartner(String nombre, String direccion, String telefono, int estado, int idComercial) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put("Nombre", nombre);
+        values.put("Direccion", direccion);
+        values.put("Telefono", telefono);
+        values.put("Estado", estado);
+        values.put("Id_Comercial", idComercial); // Se usa el ID del usuario logueado
+
+        db.insert(TABLE_PARTNER, null, values);
+        db.close();
+    }
+    public void eliminarPartner(int partnerId, Context context) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // Intentar eliminar el partner con el ID proporcionado
+        int rowsDeleted = db.delete(TABLE_PARTNER, "Partner_id = ?", new String[]{String.valueOf(partnerId)});
+        db.close();
+
+        // Verificar si se eliminó correctamente
+        if (rowsDeleted > 0) {
+            Toast.makeText(context, "Partner eliminado correctamente", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(context, "Error: No se encontró un partner con ese ID", Toast.LENGTH_SHORT).show();
+        }
+
+        // Cerrar la actividad y volver atrás
+        if (context instanceof Activity) {
+            ((Activity) context).finish();  // Cierra la actividad actual
+        }
+    }
+
+    public void PartnerSortuEguneratu(int partnerId, String nombre, String direccion, String telefono, int estado, int idComercial) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        // No incluimos el Partner_ID en el ContentValues, ya que se genera automáticamente con AUTOINCREMENT
+        values.put(COLUMN_NOMBRE_PART, nombre);
+        values.put(COLUMN_DIRECCION, direccion);
+        values.put(COLUMN_TELEFONO_PART, telefono);
+        values.put(COLUMN_ESTADO, estado);
+        values.put(COLUMN_ID_COMERCIAL, idComercial);
+
+        // Intentar actualizar el partner con el ID especificado
+        int rowsUpdated = db.update(TABLE_PARTNER, values, COLUMN_PARTNER_ID + " = ?", new String[]{String.valueOf(partnerId)});
+
+        if (rowsUpdated == 0) {
+            // Si no se actualizó (porque no existe el Partner_ID), se inserta un nuevo partner
+            db.insert(TABLE_PARTNER, null, values);
+        }
+
+        db.close();
+    }
+
+    public Partner getPartnerById(int partnerId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_PARTNER, null, COLUMN_PARTNER_ID + " = ?", new String[]{String.valueOf(partnerId)}, null, null, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            @SuppressLint("Range") Partner partner = new Partner(
+                    cursor.getInt(cursor.getColumnIndex(COLUMN_PARTNER_ID)),
+                    cursor.getString(cursor.getColumnIndex(COLUMN_NOMBRE_PART)),
+                    cursor.getString(cursor.getColumnIndex(COLUMN_DIRECCION)),
+                    cursor.getString(cursor.getColumnIndex(COLUMN_TELEFONO_PART)),
+                    cursor.getInt(cursor.getColumnIndex(COLUMN_ESTADO)),
+                    cursor.getInt(cursor.getColumnIndex(COLUMN_ID_COMERCIAL))
+            );
+            cursor.close();
+            return partner;
+        } else {
+            return null;  // No se encontró el partner
+        }
+    }
+    public void updatePartner(int partnerId, String nombre, String direccion, String telefono, int estado, int idComercial) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NOMBRE_PART, nombre);
+        values.put(COLUMN_DIRECCION, direccion);
+        values.put(COLUMN_TELEFONO_PART, telefono);
+        values.put(COLUMN_ESTADO, estado);
+        values.put(COLUMN_ID_COMERCIAL, idComercial);
+
+        // Actualizar el registro del partner en la base de datos
+        db.update(TABLE_PARTNER, values, COLUMN_PARTNER_ID + " = ?", new String[]{String.valueOf(partnerId)});
+        db.close();
+    }
+
+
+
+
+
+
+
+
+
 }

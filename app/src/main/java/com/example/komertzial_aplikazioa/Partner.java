@@ -6,17 +6,25 @@ public class Partner {
     private String direccion;
     private String telefono;
     private int estado; // 0 = No es partner, 1 = Es partner
-    private int idComercial; // Clave foránea que referencia a la tabla komertzialak
+    private String Comercial; // Clave foránea que referencia a la tabla komertzialak
 
-    public Partner(int partnerId, String nombre, String direccion, String telefono, int estado, int idComercial) {
+    public Partner(int partnerId, String nombre, String direccion, String telefono, int estado, String Comercial) {
         this.partnerId = partnerId;
         this.nombre = nombre;
         this.direccion = direccion;
         this.telefono = telefono;
         this.estado = estado;
-        this.idComercial = idComercial;
+        this.Comercial = Comercial;
     }
 
+    public Partner(int partnerId, String nombre, String direccion, String telefono, int estado, int Comercial) {
+        this.partnerId = partnerId;
+        this.nombre = nombre;
+        this.direccion = direccion;
+        this.telefono = telefono;
+        this.estado = estado;
+        this.Comercial = String.valueOf(Comercial);
+    }
     // Getters
     public int getPartnerId() {
         return partnerId;
@@ -38,7 +46,7 @@ public class Partner {
         return estado;
     }
 
-    public int getIdComercial() {
-        return idComercial;
+    public String getIdComercial() {
+        return Comercial;
     }
 }

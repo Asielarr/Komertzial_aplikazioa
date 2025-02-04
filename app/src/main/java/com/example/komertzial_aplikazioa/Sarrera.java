@@ -44,7 +44,7 @@ public class Sarrera extends AppCompatActivity {
 
         btnMenu = findViewById(R.id.btnMenu);
         webView = findViewById(R.id.mapa);
-
+        int userId = db.obtenerUserIdPorNombre(nombreUsuario);
 
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -67,8 +67,6 @@ public class Sarrera extends AppCompatActivity {
                 switch (item.getTitle().toString()) {
                     case "Agenda":
 
-                        int userId = db.obtenerUserIdPorNombre(nombreUsuario);
-
                         if (userId != -1) {
                             Intent agendaIntent = new Intent(Sarrera.this, AgendaActivity.class);
                             agendaIntent.putExtra("user_id", userId);
@@ -81,8 +79,13 @@ public class Sarrera extends AppCompatActivity {
 
 
                     case "Partner kudeaketa":
+                        if (userId != -1) {
                         Intent partnerIntent = new Intent(Sarrera.this, PartnerActivity.class);
+                        partnerIntent.putExtra("user_id", userId);
                         startActivity(partnerIntent);
+                        } else {
+                            Toast.makeText(Sarrera.this, "Ezin izan da ID-a lortu", Toast.LENGTH_SHORT).show();
+                        }
                         break;
 
 

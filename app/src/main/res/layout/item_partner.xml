@@ -4,6 +4,14 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- ID del Partner -->
+    <TextView
+        android:id="@+id/tvIdPartner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ID Partner"
+        android:textStyle="bold" />
+
     <TextView
         android:id="@+id/tvNombre"
         android:layout_width="match_parent"

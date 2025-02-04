@@ -34,8 +34,17 @@ public class PartnerAdapter extends RecyclerView.Adapter<PartnerAdapter.PartnerV
     @Override
     public void onBindViewHolder(@NonNull PartnerViewHolder holder, int position) {
         Partner partner = partnerList.get(position);
-        holder.bind(partner);
+
+        // Corregido: Convertir int a String antes de setText()
+        holder.tvIdPartner.setText(String.valueOf(partner.getPartnerId()));
+        holder.tvNombre.setText(partner.getNombre());
+        holder.tvDireccion.setText(partner.getDireccion());
+        holder.tvTelefono.setText(partner.getTelefono());
+        holder.tvEstado.setText(partner.getEstado() == 1 ? "Activo" : "Inactivo");
+        holder.tvIdComercial.setText(String.valueOf(partner.getIdComercial())); // También aquí
     }
+
+
 
     @Override
     public int getItemCount() {
@@ -44,10 +53,11 @@ public class PartnerAdapter extends RecyclerView.Adapter<PartnerAdapter.PartnerV
 
     public static class PartnerViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView tvNombre, tvDireccion, tvTelefono, tvEstado, tvIdComercial;
+        private TextView tvIdPartner,tvNombre, tvDireccion, tvTelefono, tvEstado, tvIdComercial;
 
         public PartnerViewHolder(@NonNull View itemView) {
             super(itemView);
+            tvIdPartner = itemView.findViewById(R.id.tvIdPartner);
             tvNombre = itemView.findViewById(R.id.tvNombre);
             tvDireccion = itemView.findViewById(R.id.tvDireccion);
             tvTelefono = itemView.findViewById(R.id.tvTelefono);
@@ -56,6 +66,7 @@ public class PartnerAdapter extends RecyclerView.Adapter<PartnerAdapter.PartnerV
         }
 
         public void bind(Partner partner) {
+            tvIdPartner.setText("ID: "+partner.getPartnerId());
             tvNombre.setText("Izena: "+partner.getNombre());
             tvDireccion.setText("Helbidea: "+partner.getDireccion());
             tvTelefono.setText("Telefonoa: "+partner.getTelefono());
