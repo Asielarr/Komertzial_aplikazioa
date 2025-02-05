@@ -1,13 +1,10 @@
 package com.example.komertzial_aplikazioa;
 
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.ContentValues;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.InputType;
 import android.util.Log;
 import org.w3c.dom.Document;
@@ -15,6 +12,14 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import android.widget.Toast;
 
@@ -59,118 +64,117 @@ public class PartnerActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         loadPartners();
 
-        btnAlta.setOnClickListener(v -> showAddPartnerDialog());
+        btnAlta.setOnClickListener(v -> PartnerGehituDialog());
 
         BtnBaja.setOnClickListener(v -> {
-            // Crear un AlertDialog para pedir el ID del partner a eliminar
+            // AlertDialog bat sortzen du, partner-aren ID-a sartzeko
             AlertDialog.Builder builder = new AlertDialog.Builder(PartnerActivity.this);
-            builder.setTitle("Eliminar Partner");
-            builder.setMessage("Introduce el ID del partner que deseas eliminar:");
+            builder.setTitle("Partner-ari baja eman");
+            builder.setMessage("Sartu ezabatuko den partner-aren ID-a:");
 
-            // EditText para que el usuario ingrese el ID
+            // Edit text bat sortzen du, ID-a idazteko
             final EditText input = new EditText(PartnerActivity.this);
             input.setInputType(InputType.TYPE_CLASS_NUMBER);
             builder.setView(input);
 
-            // Botón "Aceptar"
-            builder.setPositiveButton("Aceptar", (dialog, which) -> {
+            // Botoi bat sortzen du
+            builder.setPositiveButton("Onartu", (dialog, which) -> {
                 String partnerIdStr = input.getText().toString().trim();
 
-                // Validar que el ID no esté vacío
+                // ID-a hustik ez dagoela egiaztatu
                 if (partnerIdStr.isEmpty()) {
-                    Toast.makeText(PartnerActivity.this, "Debes ingresar un ID", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(PartnerActivity.this, "ID bat sartu behar duzu", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 int partnerId = Integer.parseInt(partnerIdStr);
 
-                // Confirmación final antes de eliminar
+                // Ziurtatu ezabatu nahi duela
                 new AlertDialog.Builder(PartnerActivity.this)
-                        .setTitle("Confirmación")
-                        .setMessage("¿Seguro que quieres eliminar el partner con ID " + partnerId + "?")
-                        .setPositiveButton("Sí", (confirmDialog, whichConfirm) -> {
-                            // Crear un objeto de DatabaseHelper
+                        .setTitle("Egiaztapena")
+                        .setMessage("Ziur zaude hurrengo ID-a duen partner-a ezabatu nahi duzula?" + partnerId + "?")
+                        .setPositiveButton("Bai", (confirmDialog, whichConfirm) -> {
                             DatabaseHelper dbHelper = new DatabaseHelper(PartnerActivity.this);
 
-                            // Llamar al método eliminarPartner y pasarle el contexto
-                            dbHelper.eliminarPartner(partnerId, PartnerActivity.this);
+                            dbHelper.PartnerEzabatu(partnerId, PartnerActivity.this);
                         })
-                        .setNegativeButton("No", null)
+                        .setNegativeButton("Ez", null)
                         .show();
             });
 
-            // Botón "Cancelar"
-            builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
+            // Atzera botoia
+            builder.setNegativeButton("Atzera", (dialog, which) -> dialog.dismiss());
 
-            // Mostrar el diálogo
             builder.show();
         });
 
+        //Inportatzeko balioko duen botoia
         Button btnImportar = findViewById(R.id.BtnInportatu);
         btnImportar.setOnClickListener(v -> XMLAukeratu());
 
-        // Referencias a los EditText y Button
+        //Eguneratzeko balioko duen botoia
         btnActualizar = findViewById(R.id.BtnAldaketa);
-
-        // Al hacer click en el botón de actualización
         btnActualizar.setOnClickListener(v -> showPartnerIdDialog());
-
 
     }
 
+    //Momentu honetan dauden partner-ak kargatuko duen metodoa
     private void loadPartners() {
-        partnerList = dbHelper.getAllPartners();
+        partnerList = dbHelper.PartnerrakLortu();
         adapter = new PartnerAdapter(partnerList);
         recyclerView.setAdapter(adapter);
     }
 
-    private void showAddPartnerDialog() {
+    //Partner berri bat gehitzeko erabiliko den metodoa
+    private void PartnerGehituDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Añadir nuevo Partner");
+        builder.setTitle("Partner berri bat gehitu");
 
-        // Layout para el diálogo
+        // Layout-a dialog-arentzat
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(50, 20, 50, 20);
 
         final EditText inputNombre = new EditText(this);
-        inputNombre.setHint("Nombre");
+        inputNombre.setHint("Izena");
         layout.addView(inputNombre);
 
         final EditText inputDireccion = new EditText(this);
-        inputDireccion.setHint("Dirección");
+        inputDireccion.setHint("Helbidea");
         layout.addView(inputDireccion);
 
         final EditText inputTelefono = new EditText(this);
-        inputTelefono.setHint("Teléfono");
+        inputTelefono.setHint("Mugikorra");
         layout.addView(inputTelefono);
 
         final EditText inputEstado = new EditText(this);
-        inputEstado.setHint("Estado (0 o 1)");
+        inputEstado.setHint("Mota(0 edo 1)");
         layout.addView(inputEstado);
-
 
         builder.setView(layout);
 
-        // Botón de confirmación
-        builder.setPositiveButton("Añadir", (dialog, which) -> {
+        // Egiaztapen botoia
+        builder.setPositiveButton("Gehitu", (dialog, which) -> {
             String nombre = inputNombre.getText().toString();
             String direccion = inputDireccion.getText().toString();
             String telefono = inputTelefono.getText().toString();
             int estado = Integer.parseInt(inputEstado.getText().toString());
 
-            // Insertar en la base de datos
-            dbHelper.addPartner(nombre, direccion, telefono, estado, usuarioId);
+            // Datu basean gorde
+            dbHelper.PartnerraGehitu(nombre, direccion, telefono, estado, usuarioId);
 
-            // Recargar la lista
+            // XML-an gorde
+            savePartnerToXML(nombre, direccion, telefono, estado, usuarioId);
+
             loadPartners();
         });
 
-        // Botón de cancelar
-        builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.cancel());
+        // Atzera botoia
+        builder.setNegativeButton("Atzera", (dialog, which) -> dialog.cancel());
 
         builder.show();
     }
+
     // XML-a aukeratzeko lehioa ireki
     private void XMLAukeratu() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -179,40 +183,40 @@ public class PartnerActivity extends AppCompatActivity {
         startActivityForResult(Intent.createChooser(intent, "Aukeratu XML-a"), PICK_XML_FILE);
     }
 
+    //XML-a aukeratu ondorengo gertakaria
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_XML_FILE && resultCode == RESULT_OK && data != null) {
             Uri uri = data.getData();
             if (uri != null) {
-                XMLirakurri(uri);  // Llamar al método para leer el XML
+                XMLirakurri(uri);
             }
         }
     }
+
     // Irekitako XML fitxategia irakurri
     private void XMLirakurri(Uri uri) {
         try {
             InputStream inputStream = getContentResolver().openInputStream(uri);
             if (inputStream == null) {
-                Toast.makeText(this, "No se pudo abrir el archivo", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Ezin izan da fitxategia ireki", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Crea un DocumentBuilderFactory y un DocumentBuilder
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document = builder.parse(inputStream);
-            document.getDocumentElement().normalize();  // Normaliza el documento
+            document.getDocumentElement().normalize();
 
-            // Obtén los elementos "partner" del XML
+            // "partner" Elementuak lortu
             NodeList nodeList = document.getElementsByTagName("partner");
 
+            //Partner bakoitzeko datuak ateratzen ditu eta datu basean gorde
             int count = 0;
-            // Itera sobre todos los elementos "partner" en el XML
             for (int i = 0; i < nodeList.getLength(); i++) {
-                Element element = (Element) nodeList.item(i);  // Obtén cada "partner"
+                Element element = (Element) nodeList.item(i);
 
-                // Extrae los valores de cada "partner"
                 int partnerId = Integer.parseInt(element.getElementsByTagName("Partner_ID").item(0).getTextContent());
                 String nombre = element.getElementsByTagName("nombre").item(0).getTextContent();
                 String direccion = element.getElementsByTagName("direccion").item(0).getTextContent();
@@ -220,8 +224,7 @@ public class PartnerActivity extends AppCompatActivity {
                 int estado = Integer.parseInt(element.getElementsByTagName("estado").item(0).getTextContent());
                 int idComercial = Integer.parseInt(element.getElementsByTagName("id_comercial").item(0).getTextContent());
 
-                // Llamamos al método para insertar o actualizar el partner
-                dbHelper.PartnerSortuEguneratu(partnerId, nombre, direccion, telefono, estado, idComercial);
+                dbHelper.PartnerEguneratuSortu(partnerId, nombre, direccion, telefono, estado, idComercial);
                 count++;
             }
 
@@ -233,48 +236,43 @@ public class PartnerActivity extends AppCompatActivity {
         }
     }
 
+    //Dialog bat sortzen du, partner baten datuak editatzeko
     public void showPartnerIdDialog() {
-        // Crear un diálogo para pedir el ID del partner
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Ingrese el ID del Partner");
+        builder.setTitle("Sartu partner baten ID-a");
 
-        // Crear un EditText para ingresar el Partner ID
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_NUMBER);
         builder.setView(input);
 
-        builder.setPositiveButton("Aceptar", (dialog, which) -> {
+        builder.setPositiveButton("Jarraitu", (dialog, which) -> {
             String partnerIdStr = input.getText().toString();
             if (!partnerIdStr.isEmpty()) {
                 int partnerId = Integer.parseInt(partnerIdStr);
-                // Verificar si el Partner existe en la base de datos
-                Partner partner = dbHelper.getPartnerById(partnerId);
+                Partner partner = dbHelper.PartnerLortuIDbidez(partnerId);
                 if (partner != null) {
-                    // Si el Partner existe, mostrar el segundo diálogo
                     showEditPartnerDialog(partner);
                 } else {
-                    Toast.makeText(this, "Partner no encontrado", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Partner-a ez da aurkitu", Toast.LENGTH_SHORT).show();
                 }
             } else {
-                Toast.makeText(this, "Por favor, ingrese un ID válido", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Sartu ID baliodun bat", Toast.LENGTH_SHORT).show();
             }
         });
 
-        builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
+        builder.setNegativeButton("Atzera", (dialog, which) -> dialog.dismiss());
 
         builder.show();
     }
 
+    //Editatzeko dialog-a irekitzen du
     public void showEditPartnerDialog(Partner partner) {
-        // Crear un nuevo diálogo para editar los datos del Partner
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Editar datos del Partner");
+        builder.setTitle("Partner-aren datuak eguneratu");
 
-        // Crear un layout para el diálogo
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
 
-        // Crear los EditTexts para los campos
         final EditText etNombre = new EditText(this);
         etNombre.setText(partner.getNombre());
 
@@ -290,7 +288,6 @@ public class PartnerActivity extends AppCompatActivity {
         final EditText etIdComercial = new EditText(this);
         etIdComercial.setText(String.valueOf(partner.getIdComercial()));
 
-        // Añadir los EditTexts al layout
         layout.addView(etNombre);
         layout.addView(etDireccion);
         layout.addView(etTelefono);
@@ -299,23 +296,114 @@ public class PartnerActivity extends AppCompatActivity {
 
         builder.setView(layout);
 
-        builder.setPositiveButton("Guardar", (dialog, which) -> {
-            // Obtener los datos modificados
+        builder.setPositiveButton("Gorde", (dialog, which) -> {
+            // Aldaketak lortu
             String nombre = etNombre.getText().toString();
             String direccion = etDireccion.getText().toString();
             String telefono = etTelefono.getText().toString();
             int estado = Integer.parseInt(etEstado.getText().toString());
             int idComercial = Integer.parseInt(etIdComercial.getText().toString());
 
-            // Actualizar los datos del partner en la base de datos
+            //Eguneratu
             dbHelper.updatePartner(partner.getPartnerId(), nombre, direccion, telefono, estado, idComercial);
-            Toast.makeText(this, "Datos del partner actualizados", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Datuak eguneratu dira", Toast.LENGTH_SHORT).show();
         });
 
-        builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
+        builder.setNegativeButton("Atzera", (dialog, which) -> dialog.dismiss());
 
         builder.show();
     }
+
+    private void savePartnerToXML(String nombre, String direccion, String telefono, int estado, int idComercial) {
+        try {
+            // Obtener la ruta correcta dentro del almacenamiento de la app
+            File baseDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "XML-ak/Bidaltzeko");
+
+
+            // Crear las carpetas si no existen
+            if (!baseDir.exists()) {
+                baseDir.mkdirs();
+            }
+
+            // Archivo XML donde se guardarán los partners
+            File file = new File(baseDir, "partner_berriak.xml");
+
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document document;
+
+            // Si el archivo ya existe, cargarlo
+            if (file.exists()) {
+                FileInputStream fis = new FileInputStream(file);
+                document = builder.parse(fis);
+                fis.close();
+
+                // Obtener el nodo raíz
+                Element root = document.getDocumentElement();
+
+                // Crear nuevo nodo "partner"
+                Element partner = createPartnerElement(document, nombre, direccion, telefono, estado, idComercial);
+                root.appendChild(partner);
+
+            } else {
+                // Crear un nuevo documento XML
+                document = builder.newDocument();
+
+                // Crear nodo raíz "partners"
+                Element root = document.createElement("partners");
+                document.appendChild(root);
+
+                // Crear primer nodo "partner"
+                Element partner = createPartnerElement(document, nombre, direccion, telefono, estado, idComercial);
+                root.appendChild(partner);
+            }
+
+            // Guardar los cambios en el archivo XML
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+
+            DOMSource source = new DOMSource(document);
+            StreamResult result = new StreamResult(file);
+            transformer.transform(source, result);
+
+            Toast.makeText(this, "Partner guardado en: " + file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error al guardar en XML", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+
+    private Element createPartnerElement(Document document, String nombre, String direccion, String telefono, int estado, int idComercial) {
+        Element partner = document.createElement("partner");
+
+        Element nombreElement = document.createElement("nombre");
+        nombreElement.appendChild(document.createTextNode(nombre));
+        partner.appendChild(nombreElement);
+
+        Element direccionElement = document.createElement("direccion");
+        direccionElement.appendChild(document.createTextNode(direccion));
+        partner.appendChild(direccionElement);
+
+        Element telefonoElement = document.createElement("telefono");
+        telefonoElement.appendChild(document.createTextNode(telefono));
+        partner.appendChild(telefonoElement);
+
+        Element estadoElement = document.createElement("estado");
+        estadoElement.appendChild(document.createTextNode(String.valueOf(estado)));
+        partner.appendChild(estadoElement);
+
+        Element idComercialElement = document.createElement("idComercial");
+        idComercialElement.appendChild(document.createTextNode(String.valueOf(idComercial)));
+        partner.appendChild(idComercialElement);
+
+        return partner;
+    }
+
+
 
 
 

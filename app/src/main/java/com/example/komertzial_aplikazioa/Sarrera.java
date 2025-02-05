@@ -1,11 +1,7 @@
 package com.example.komertzial_aplikazioa;
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.MenuItem;
-import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
@@ -44,7 +40,7 @@ public class Sarrera extends AppCompatActivity {
 
         btnMenu = findViewById(R.id.btnMenu);
         webView = findViewById(R.id.mapa);
-        int userId = db.obtenerUserIdPorNombre(nombreUsuario);
+        int userId = db.ErabiltzaileIDlortu(nombreUsuario);
 
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);

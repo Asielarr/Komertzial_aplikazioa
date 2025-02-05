@@ -102,14 +102,14 @@ public class xml_inportatu extends AppCompatActivity {
 
     // Erregistro aldatuak edo berriak sortzen ditu
     private void KomertzialaSortuEguneratu(String nombre, String email, String telefono, String pasahitza, String eremua) {
-        int userId = databaseHelper.obtenerUserIdPorNombre(nombre);
+        int userId = databaseHelper.ErabiltzaileIDlortu(nombre);
 
         if (userId == -1) {
-            databaseHelper.insertarKomertzial(nombre, email, telefono, pasahitza, eremua);
+            databaseHelper.KomertzialaGehitu(nombre, email, telefono, pasahitza, eremua);
             Log.d("XMLImport", "Berria gehitua: " + nombre);
         } else {
             // Actualizar existente
-            databaseHelper.actualizarKomertzial(userId, email, telefono, pasahitza, eremua);
+            databaseHelper.KomertzialaEguneratu(userId, email, telefono, pasahitza, eremua);
             Log.d("XMLImport", "Eguneratua: " + nombre);
         }
     }

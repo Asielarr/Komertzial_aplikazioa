@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Erabiltzaile eta pasahitza egokiak sartu direla egiaztatzen du
     private boolean kredentzialakegiaztatu(String erabiltzailea, String pasahitza) {
-        Cursor cursor = dbHelper.obtenerUsuarioPorNombreYPass(erabiltzailea, pasahitza);
+        Cursor cursor = dbHelper.LoginKontsulta(erabiltzailea, pasahitza);
 
         boolean resultado = cursor.getCount() > 0;
         cursor.close();

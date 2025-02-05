@@ -3,7 +3,6 @@ package com.example.komertzial_aplikazioa;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -16,7 +15,6 @@ import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,7 +24,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -54,7 +51,7 @@ public class AgendaActivity extends AppCompatActivity {
         erabizena = intent.getStringExtra("user_name");
 
         if (usuarioId == -1) {
-            Toast.makeText(this, "ID de usuario no encontrado", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Erabiltzaile ID-a ez da aurkitu", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -88,14 +85,14 @@ public class AgendaActivity extends AppCompatActivity {
 
     // Bisita bat ezabatzen du
     private void Bisitaezabatu(Visita visita) {
-        db.eliminarVisita(visita.getId());
+        db.BisitaEzabatu(visita.getId());
         Bisitakargatu(selectedDate);
     }
 
     // Bisita bat gehitzeko laguntzailea irekitzen du
     private void Bisitagehitu() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Nueva Actividad");
+        builder.setTitle("Bisita berria");
 
         View viewInflated = LayoutInflater.from(this).inflate(R.layout.dialog_add_visita, null);
         EditText inputTitulo = viewInflated.findViewById(R.id.inputTitulo);
@@ -107,7 +104,7 @@ public class AgendaActivity extends AppCompatActivity {
             String detalles = inputDetalles.getText().toString().trim();
 
             if (!titulo.isEmpty() && !detalles.isEmpty()) {
-                db.insertarVisita(titulo, detalles, selectedDate, usuarioId);
+                db.BisitaGorde(titulo, detalles, selectedDate, usuarioId);
                 Bisitakargatu(selectedDate);
             } else {
                 Toast.makeText(this, "Datu guztiak sartu behar dira", Toast.LENGTH_SHORT).show();
@@ -121,7 +118,7 @@ public class AgendaActivity extends AppCompatActivity {
     // Iada gordetako bisitak kargatzen ditu
     private void Bisitakargatu(String fecha) {
         visitasList.clear();
-        visitasList.addAll(db.obtenerEventosPorUsuarioYFecha(usuarioId,fecha)); // Cargamos las visitas para un usuario específico y fecha
+        visitasList.addAll(db.BisitakErabiltzaileDataArabera(usuarioId,fecha));
         visitasAdapter.notifyDataSetChanged();
     }
 
@@ -134,44 +131,45 @@ public class AgendaActivity extends AppCompatActivity {
                 calendar.get(java.util.Calendar.DAY_OF_MONTH));
     }
 
+    //Hilabeteko bisita guztien Goiburua eta xehetasuna txt batean idazten eta gordetzendu(/storage/emulated/0/Documents/XML-ak/Bidaltzeko/)
     public void txtesportatu(Context context) {
-        DatabaseHelper db = new DatabaseHelper(context); // CORREGIDO: Pasar context
+        DatabaseHelper db = new DatabaseHelper(context);
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM", Locale.getDefault());
         String currentMonth = dateFormat.format(calendar.getTime());
 
-        List<Visita> meetings = db.getMeetingsForMonth(currentMonth);
+        List<Visita> meetings = db.HilabetekoBilerak(currentMonth,usuarioId);
         if (meetings.isEmpty()) {
             new Handler(Looper.getMainLooper()).post(() ->
-                    Toast.makeText(context, "No hay reuniones para este mes", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Hilabete honetan ez da bilerarik egon", Toast.LENGTH_SHORT).show()
             );
-            Log.e("ExportMeetings", "No hay reuniones para exportar.");
+            Log.e("ExportMeetings", "Ez daude exportatzeko bilerak.");
             return;
         }
 
-        File directory = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+        File directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "XML-ak/Bidaltzeko");
         if (directory != null && !directory.exists()) {
             boolean dirCreated = directory.mkdirs();
             Log.d("ExportMeetings", "Fitxategia sortu da: " + dirCreated);
         }
 
-        File file = new File(directory, "Bilerak_" + currentMonth + ".txt");
+        File file = new File(directory, "Bilerak_" + currentMonth +"_"+erabizena+ ".txt");
 
         try (FileWriter writer = new FileWriter(file)) {
             for (Visita meeting : meetings) {
                 writer.write("Data: " + meeting.getDate() + " - Goiburua: " + meeting.getTitulo() + "\n");
             }
             writer.flush();
-            Log.d("ExportMeetings", "Archivo guardado en: " + file.getAbsolutePath());
+            Log.d("ExportMeetings", "Fitxategia gordeta: " + file.getAbsolutePath());
 
             new Handler(Looper.getMainLooper()).post(() ->
-                    Toast.makeText(context, "Archivo guardado en: " + file.getAbsolutePath(), Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "Fitxategia gordeta: " + file.getAbsolutePath(), Toast.LENGTH_LONG).show()
             );
 
         } catch (IOException e) {
-            Log.e("ExportMeetings", "Error al guardar el archivo", e);
+            Log.e("ExportMeetings", "Errorea fitxategia gordetzean", e);
             new Handler(Looper.getMainLooper()).post(() ->
-                    Toast.makeText(context, "Error al guardar el archivo", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Errorea fitxategia gordetzean", Toast.LENGTH_SHORT).show()
             );
         }
     }

@@ -5,9 +5,11 @@ public class Partner {
     private String nombre;
     private String direccion;
     private String telefono;
-    private int estado; // 0 = No es partner, 1 = Es partner
-    private String Comercial; // Clave foránea que referencia a la tabla komertzialak
+    private int estado;
+    private String Comercial;
 
+
+    //Partner konstruktorea, komertzialaren izenarekin
     public Partner(int partnerId, String nombre, String direccion, String telefono, int estado, String Comercial) {
         this.partnerId = partnerId;
         this.nombre = nombre;
@@ -17,6 +19,7 @@ public class Partner {
         this.Comercial = Comercial;
     }
 
+    //Partner-aren konstruktorea, komertzialaren id-arekin
     public Partner(int partnerId, String nombre, String direccion, String telefono, int estado, int Comercial) {
         this.partnerId = partnerId;
         this.nombre = nombre;
