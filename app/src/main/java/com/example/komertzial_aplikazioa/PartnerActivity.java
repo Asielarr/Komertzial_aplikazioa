@@ -314,51 +314,45 @@ public class PartnerActivity extends AppCompatActivity {
         builder.show();
     }
 
+    //Partner berriaren datuak XML batean gordetzen dira
     private void savePartnerToXML(String nombre, String direccion, String telefono, int estado, int idComercial) {
         try {
-            // Obtener la ruta correcta dentro del almacenamiento de la app
+            // Partnerraren fitxategia gordetzeko helbidea(emulated/0/documents/XML-ak/Bidaltzeko)
             File baseDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "XML-ak/Bidaltzeko");
 
-
-            // Crear las carpetas si no existen
+            //karpeta ez badago, sortu
             if (!baseDir.exists()) {
                 baseDir.mkdirs();
             }
 
-            // Archivo XML donde se guardarán los partners
+            //Fitxategiaren izena
             File file = new File(baseDir, "partner_berriak.xml");
 
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document;
 
-            // Si el archivo ya existe, cargarlo
             if (file.exists()) {
                 FileInputStream fis = new FileInputStream(file);
                 document = builder.parse(fis);
                 fis.close();
 
-                // Obtener el nodo raíz
                 Element root = document.getDocumentElement();
 
-                // Crear nuevo nodo "partner"
                 Element partner = createPartnerElement(document, nombre, direccion, telefono, estado, idComercial);
                 root.appendChild(partner);
 
             } else {
-                // Crear un nuevo documento XML
                 document = builder.newDocument();
 
-                // Crear nodo raíz "partners"
                 Element root = document.createElement("partners");
                 document.appendChild(root);
 
-                // Crear primer nodo "partner"
                 Element partner = createPartnerElement(document, nombre, direccion, telefono, estado, idComercial);
                 root.appendChild(partner);
             }
 
-            // Guardar los cambios en el archivo XML
+            // Aldaketak gorde
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -367,16 +361,16 @@ public class PartnerActivity extends AppCompatActivity {
             StreamResult result = new StreamResult(file);
             transformer.transform(source, result);
 
-            Toast.makeText(this, "Partner guardado en: " + file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Partnerberria godrde da: " + file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
 
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(this, "Error al guardar en XML", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Errorea gorderzean", Toast.LENGTH_SHORT).show();
         }
     }
 
 
-
+    //XML fitxategiko nodoak sortzen ditu
     private Element createPartnerElement(Document document, String nombre, String direccion, String telefono, int estado, int idComercial) {
         Element partner = document.createElement("partner");
 

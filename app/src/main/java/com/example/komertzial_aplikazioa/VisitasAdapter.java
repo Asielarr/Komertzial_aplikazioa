@@ -24,6 +24,7 @@ public class VisitasAdapter extends RecyclerView.Adapter<VisitasAdapter.VisitaVi
     private List<Visita> visitasList;
     private OnVisitaDeletedListener deleteListener;
 
+    //Bisita ezabatzeko bista deitzen du
     public interface OnVisitaDeletedListener {
         void onVisitaDeleted(Visita visita);
     }
@@ -35,11 +36,13 @@ public class VisitasAdapter extends RecyclerView.Adapter<VisitasAdapter.VisitaVi
 
     @NonNull
     @Override
+    //Bisita ezabatzeko bista irekitzen du
     public VisitaViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_visita, parent, false);
         return new VisitaViewHolder(view);
     }
 
+    //Bisita ezabatzeko bistari botoiak gehitzen dizkio
     @Override
     public void onBindViewHolder(@NonNull VisitaViewHolder holder, int position) {
         Visita visita = visitasList.get(position);
@@ -51,6 +54,7 @@ public class VisitasAdapter extends RecyclerView.Adapter<VisitasAdapter.VisitaVi
         });
     }
 
+    //Datuak lortzen ditu
     @Override
     public int getItemCount() {
         return visitasList.size();

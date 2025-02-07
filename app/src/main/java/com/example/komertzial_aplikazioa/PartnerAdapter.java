@@ -26,26 +26,29 @@ public class PartnerAdapter extends RecyclerView.Adapter<PartnerAdapter.PartnerV
 
     @NonNull
     @Override
+    //Partner-a sartzeko view berri bati deitzen dio
     public PartnerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_partner, parent, false);
         return new PartnerViewHolder(view);
     }
 
     @Override
+    //Partner-aren datuak hartzen ditu
     public void onBindViewHolder(@NonNull PartnerViewHolder holder, int position) {
         Partner partner = partnerList.get(position);
 
-        // Corregido: Convertir int a String antes de setText()
         holder.tvIdPartner.setText(String.valueOf(partner.getPartnerId()));
         holder.tvNombre.setText(partner.getNombre());
         holder.tvDireccion.setText(partner.getDireccion());
         holder.tvTelefono.setText(partner.getTelefono());
         holder.tvEstado.setText(partner.getEstado() == 1 ? "Activo" : "Inactivo");
-        holder.tvIdComercial.setText(String.valueOf(partner.getIdComercial())); // También aquí
+        holder.tvIdComercial.setText(String.valueOf(partner.getIdComercial()));
     }
 
 
 
+
+    //Partner-aren datuak ezartzen ditu
     @Override
     public int getItemCount() {
         return partnerList.size();
