@@ -53,6 +53,7 @@ public class Sarrera extends AppCompatActivity {
             popup.getMenu().add("Agenda");
             popup.getMenu().add("Partner kudeaketa");
             popup.getMenu().add("Eskaerak");
+            popup.getMenu().add("Eskaerak Aldatu");
             popup.getMenu().add("Komertzialak eguneratu");
 
 
@@ -88,13 +89,20 @@ public class Sarrera extends AppCompatActivity {
                     case "Eskaerak":
 
 
-                        //Intent eskaerakIntent = new Intent(Sarrera.this, EskaerakActivity.class);
-                        //startActivity(eskaerakIntent);
+                        Intent eskaerakIntent = new Intent(Sarrera.this, EskaerakActivity.class);
+                        startActivity(eskaerakIntent);
                         break;
 
                     case "Komertzialak eguneratu":
                         Intent eguneraketaintent = new Intent(Sarrera.this, xml_inportatu.class);
                         startActivity(eguneraketaintent);
+
+                    case "Eskaerak Aldatu":
+
+
+                        Intent eskaeraeditatuIntent = new Intent(Sarrera.this, EditarPedidosActivity.class);
+                        startActivity(eskaeraeditatuIntent);
+                        break;
                 }
 
 
