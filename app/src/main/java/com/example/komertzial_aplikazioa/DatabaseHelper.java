@@ -1,7 +1,6 @@
 package com.example.komertzial_aplikazioa;
 
 
-import static com.example.komertzial_aplikazioa.XmlHelper.getTagValue;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -582,6 +581,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public static String getTagValue(String tag, Element element) {
+        NodeList nodeList = element.getElementsByTagName(tag);
+        if (nodeList.getLength() > 0) {
+            Node node = nodeList.item(0);
+            return node.getTextContent();
+        }
+        return null;
     }
 
 

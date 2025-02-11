@@ -3,6 +3,7 @@ package com.example.komertzial_aplikazioa;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.util.Xml;
 import android.widget.Button;
@@ -66,7 +67,7 @@ public class EskaerakActivity extends AppCompatActivity implements ProductoAdapt
 
         try {
 //XML a gordeko den tokiaren direktorioa
-            File downloadsDirectory = new File(getFilesDir(), "Downloads");
+            File downloadsDirectory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "XML-ak/Bidaltzeko");
             if (!downloadsDirectory.exists()) {
                 downloadsDirectory.mkdirs();
             }
